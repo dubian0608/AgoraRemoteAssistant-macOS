@@ -226,27 +226,63 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
 - (void)handleRemoteOperation:(AgoraRemoteOperation *)operation {
     switch (operation.type) {
         case AgoraRemoteOperationTypeMouseLeftButtonDown:
+        {
+            NSDictionary *point = operation.extraInfo[@"point"];
+            CGFloat x = [point[@"x"] floatValue];
+            CGFloat y = [point[@"y"] floatValue];
+            [mouse moveMouseTo:CGPointMake(x, y)];
+        }
             [mouse leftMouseDown:NO];
             break;
             
         case AgoraRemoteOperationTypeMouseLeftButtonUp:
+        {
+            NSDictionary *point = operation.extraInfo[@"point"];
+            CGFloat x = [point[@"x"] floatValue];
+            CGFloat y = [point[@"y"] floatValue];
+            [mouse moveMouseTo:CGPointMake(x, y)];
+        }
             [mouse leftMouseUp:NO];
             break;
             
         case AgoraRemoteOperationTypeMouseLeftButtonDoubleClick:
+        {
+            NSDictionary *point = operation.extraInfo[@"point"];
+            CGFloat x = [point[@"x"] floatValue];
+            CGFloat y = [point[@"y"] floatValue];
+            [mouse moveMouseTo:CGPointMake(x, y)];
+        }
             [mouse leftMouseDown:YES];
             [mouse leftMouseDown:YES];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonDown:
+        {
+            NSDictionary *point = operation.extraInfo[@"point"];
+            CGFloat x = [point[@"x"] floatValue];
+            CGFloat y = [point[@"y"] floatValue];
+            [mouse moveMouseTo:CGPointMake(x, y)];
+        }
             [mouse rightMouseDown];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonUp:
+        {
+            NSDictionary *point = operation.extraInfo[@"point"];
+            CGFloat x = [point[@"x"] floatValue];
+            CGFloat y = [point[@"y"] floatValue];
+            [mouse moveMouseTo:CGPointMake(x, y)];
+        }
             [mouse rightMouseUp];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonDoubleClick:
+        {
+            NSDictionary *point = operation.extraInfo[@"point"];
+            CGFloat x = [point[@"x"] floatValue];
+            CGFloat y = [point[@"y"] floatValue];
+            [mouse moveMouseTo:CGPointMake(x, y)];
+        }
             [mouse rightMouseDown];
             [mouse rightMouseUp];
             [mouse rightMouseDown];
@@ -273,6 +309,14 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
             else if (y != 0) {
                 [mouse mouseScrollVertical:y];
             }
+        }
+            break;
+            
+        case AgoraRemoteOperationTypeKeyboardKeyPress:
+        {
+            CGKeyCode keyCode = [operation.extraInfo[@"keyCode"] unsignedShortValue];
+            [keyboard sendKeyDown:keyCode];
+            [keyboard sendKeyUp:keyCode];
         }
             break;
             

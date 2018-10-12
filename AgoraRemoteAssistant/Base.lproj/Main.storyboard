@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14313.13.2" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14313.13.2"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14313.18"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -295,20 +295,16 @@
                         <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="W7P-T7-abv">
-                                <rect key="frame" x="0.0" y="44" width="480" height="238"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="W7P-T7-abv">
+                                <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
                             </customView>
-                            <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="twX-4s-KJD">
-                                <rect key="frame" x="53" y="318" width="96" height="22"/>
-                                <autoresizingMask key="autoresizingMask"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" id="WKR-hT-m5k">
-                                    <font key="font" usesAppearanceFont="YES"/>
-                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
                         </subviews>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="W7P-T7-abv" secondAttribute="bottom" id="8jL-xi-4rk"/>
+                            <constraint firstItem="W7P-T7-abv" firstAttribute="top" secondItem="A0A-Y7-idp" secondAttribute="top" id="Lm8-uF-xA0"/>
+                            <constraint firstItem="W7P-T7-abv" firstAttribute="leading" secondItem="A0A-Y7-idp" secondAttribute="leading" id="UcF-zx-f0a"/>
+                            <constraint firstAttribute="trailing" secondItem="W7P-T7-abv" secondAttribute="trailing" id="quW-6P-LRz"/>
+                        </constraints>
                     </view>
                     <connections>
                         <outlet property="videoView" destination="W7P-T7-abv" id="N8M-GF-rud"/>

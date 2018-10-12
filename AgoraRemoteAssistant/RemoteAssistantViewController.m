@@ -24,8 +24,7 @@
 - (void)viewDidAppear {
     [super viewDidAppear];
     if ([[AgoraRemoteAssistantCenter sharedInstance] startRemoteAssistant:self.videoView]) {
-//        [self.view.window toggleFullScreen:nil];
-//    [self.view enterFullScreenMode:[NSScreen mainScreen] withOptions:@{NSFullScreenModeApplicationPresentationOptions : @(NSApplicationPresentationAutoHideDock | NSApplicationPresentationAutoHideMenuBar | NSApplicationPresentationAutoHideToolbar)}];
+        [self.view.window toggleFullScreen:nil];
     }
 }
 
@@ -33,7 +32,7 @@
     [[AgoraRemoteAssistantCenter sharedInstance] stopRemoteAssistant];
     
     if ((self.view.window.styleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen) {
-//        [self.view.window toggleFullScreen:nil];
+        [self.view.window toggleFullScreen:nil];
     }
     [self performSegueWithIdentifier:@"backToMain" sender:nil];
 }

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 48;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -182,6 +182,7 @@
 				TargetAttributes = {
 					703238882146552F007523FB = {
 						CreatedOnToolsVersion = 10.0;
+						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
 								enabled = 1;
@@ -191,7 +192,7 @@
 				};
 			};
 			buildConfigurationList = 703238842146552F007523FB /* Build configuration list for PBXProject "AgoraRemoteAssistant" */;
-			compatibilityVersion = "Xcode 9.3";
+			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -377,10 +378,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = AgoraRemoteAssistant/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = io.agora.AgoraRemoteAssistant;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -399,10 +397,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = AgoraRemoteAssistant/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = io.agora.AgoraRemoteAssistant;
 				PRODUCT_NAME = "$(TARGET_NAME)";
