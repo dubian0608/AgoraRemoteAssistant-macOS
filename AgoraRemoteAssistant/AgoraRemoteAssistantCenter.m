@@ -30,7 +30,8 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
     
     NSView *parentView;
     AgoraRemoteAssistantView *videoView;
-    CGSize videoSize;
+    CGSize remoteVideoSize;
+    CGSize localVideoSize;
     CGSize screenSize;
 }
 @end
@@ -62,7 +63,7 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
         keyboard = [AgoraKeyboardControl getInstance];
         mouse = [AgoraMouseControl getInstance];
         
-        screenSize = [NSScreen.mainScreen convertRectToBacking:NSScreen.mainScreen.frame].size;
+        screenSize = NSScreen.mainScreen.frame.size;
     }
     return self;
 }
@@ -107,7 +108,7 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
     
     parentView = view;
     videoView = nil;
-    videoSize = CGSizeZero;
+    remoteVideoSize = CGSizeZero;
     
     if (view) {
         [self sendControlCommand:AgoraRemoteOperationTypeStartAssistant info:nil];
@@ -232,45 +233,52 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
 }
 
 - (void)handleRemoteOperation:(AgoraRemoteOperation *)operation {
+    CGPoint position = CGPointZero;
     if (operation.type >= AgoraRemoteOperationTypeMouseLeftButtonDown &&
         operation.type <= AgoraRemoteOperationTypeMouseMove) {
         NSDictionary *point = operation.extraInfo[@"point"];
         CGFloat x = [point[@"x"] floatValue];
         CGFloat y = [point[@"y"] floatValue];
-        if (!CGSizeEqualToSize(videoSize, screenSize)) {
-            x = x / videoSize.width * screenSize.width;
-            x = y / videoSize.height * screenSize.height;
+        if (CGSizeEqualToSize(localVideoSize, screenSize)) {
+            position = CGPointMake(x, y);
         }
-        [mouse moveMouseTo:CGPointMake(x, y)];
+        else {
+            position.x = x / localVideoSize.width * screenSize.width;
+            position.y = y / localVideoSize.height * screenSize.height;
+        }
     }
     
     switch (operation.type) {
         case AgoraRemoteOperationTypeMouseLeftButtonDown:
-            [mouse leftMouseDown:NO];
+            [mouse leftMouseDown:NO position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseLeftButtonUp:
-            [mouse leftMouseUp:NO];
+            [mouse leftMouseUp:NO position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseLeftButtonDoubleClick:
-            [mouse leftMouseDown:YES];
-            [mouse leftMouseUp:YES];
+            [mouse leftMouseDown:YES position:position];
+            [mouse leftMouseUp:YES position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonDown:
-            [mouse rightMouseDown];
+            [mouse rightMouseDown:position];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonUp:
-            [mouse rightMouseUp];
+            [mouse rightMouseUp:position];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonDoubleClick:
-            [mouse rightMouseDown];
-            [mouse rightMouseUp];
-            [mouse rightMouseDown];
-            [mouse rightMouseUp];
+            [mouse rightMouseDown:position];
+            [mouse rightMouseUp:position];
+            [mouse rightMouseDown:position];
+            [mouse rightMouseUp:position];
+            break;
+            
+        case AgoraRemoteOperationTypeMouseMove:
+            [mouse moveMouseTo:position];
             break;
             
         case AgoraRemoteOperationTypeMouseWheel:
@@ -406,50 +414,50 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
 #pragma mark - AgoraRemoteAssistantViewDelegate
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseLeftButtonDown:(CGPoint)position {
-    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
-    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseLeftButtonDown info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseLeftButtonUp:(CGPoint)position {
-    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
-    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseLeftButtonUp info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseLeftButtonDoubleClick:(CGPoint)position {
-    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
-    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseLeftButtonDoubleClick info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseRightButtonDown:(CGPoint)position {
-    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
-    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseRightButtonDown info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseRightButtonUp:(CGPoint)position {
-    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
-    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseRightButtonUp info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseRightButtonDoubleClick:(CGPoint)position {
-    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
-    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseRightButtonDoubleClick info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseMove:(CGPoint)position {
-    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
-    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseMove info:info];
 }
@@ -490,7 +498,7 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
         return;
     }
     
-    videoSize = size;
+    remoteVideoSize = size;
     
     if (videoView == nil) {
         [self addVideoView];
@@ -518,7 +526,7 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
 
 - (void)rtcEngine:(AgoraRtcEngineKit * _Nonnull)engine videoSizeChangedOfUid:(NSUInteger)uid size:(CGSize)size rotation:(NSInteger)rotation {
     if (uid == 0) {
-        videoSize = size;
+        localVideoSize = size;
         return;
     }
     
@@ -531,7 +539,7 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
         return;
     }
     
-    videoSize = size;
+    remoteVideoSize = size;
     
     NSArray *constraints = videoView.constraints;
     [videoView removeConstraints:constraints];

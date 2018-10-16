@@ -20,11 +20,11 @@
     return CGEventGetLocation(event);
 }
 
-- (void)leftMouseDown:(BOOL)isDoubleClick
+- (void)leftMouseDown:(BOOL)isDoubleClick position:(CGPoint)position
 {
     CGEventRef mouseEv = CGEventCreateMouseEvent(NULL,
                                                  kCGEventLeftMouseDown,
-                                                 [self getCursorPositionCGPoint],
+                                                 position,
                                                  kCGMouseButtonLeft);
     if (isDoubleClick)
     {
@@ -34,11 +34,11 @@
     CFRelease(mouseEv);
 }
 
-- (void)leftMouseUp:(BOOL)isDoubleClick
+- (void)leftMouseUp:(BOOL)isDoubleClick position:(CGPoint)position
 {
     CGEventRef mouseEv = CGEventCreateMouseEvent(NULL,
                                                  kCGEventLeftMouseUp,
-                                                 [self getCursorPositionCGPoint],
+                                                 position,
                                                  kCGMouseButtonLeft);
     if (isDoubleClick)
     {
@@ -48,13 +48,13 @@
     CFRelease(mouseEv);
 }
 
-- (void)moveMouseTo:(CGPoint)point
+- (void)moveMouseTo:(CGPoint)position
 {
     UInt32 maxDisplays = 4;
     CGDirectDisplayID displayID[maxDisplays];
     CGDisplayCount c = 0;
     CGDisplayCount *count = &c;
-    CGGetDisplaysWithPoint(point,
+    CGGetDisplaysWithPoint(position,
                            maxDisplays,
                            displayID,
                            count);
@@ -62,7 +62,7 @@
     {
         CGEventRef mouseEv = CGEventCreateMouseEvent(NULL,
                                                      kCGEventMouseMoved,
-                                                     point,
+                                                     position,
                                                      kCGMouseButtonLeft);
         CGEventPost(kCGHIDEventTap, mouseEv);
         CFRelease(mouseEv);
@@ -98,21 +98,21 @@
     CFRelease(scrollEvent);
 }
 
-- (void)rightMouseDown
+- (void)rightMouseDown:(CGPoint)position
 {
     CGEventRef mouseEv = CGEventCreateMouseEvent(NULL,
                                                  kCGEventRightMouseDown,
-                                                 [self getCursorPositionCGPoint],
+                                                 position,
                                                  kCGMouseButtonRight);
     CGEventPost(kCGHIDEventTap, mouseEv);
     CFRelease(mouseEv);
 }
 
-- (void)rightMouseUp
+- (void)rightMouseUp:(CGPoint)position
 {
     CGEventRef mouseEv = CGEventCreateMouseEvent(NULL,
                                                  kCGEventRightMouseUp,
-                                                 [self getCursorPositionCGPoint],
+                                                 position,
                                                  kCGMouseButtonRight);
     CGEventPost(kCGHIDEventTap, mouseEv);
     CFRelease(mouseEv);
