@@ -31,6 +31,7 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
     NSView *parentView;
     AgoraRemoteAssistantView *videoView;
     CGSize videoSize;
+    CGSize screenSize;
 }
 @end
 
@@ -60,6 +61,8 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
         
         keyboard = [AgoraKeyboardControl getInstance];
         mouse = [AgoraMouseControl getInstance];
+        
+        screenSize = [NSScreen.mainScreen convertRectToBacking:NSScreen.mainScreen.frame].size;
     }
     return self;
 }
@@ -122,6 +125,10 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
 }
 
 - (void)stopRemoteAssistant {
+    if (![agoraRtc getCallId]) {
+        return;
+    }
+    
     if (parentView) {
         [self sendControlCommand:AgoraRemoteOperationTypeStopAssistant info:nil];
         
@@ -134,6 +141,7 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
     }
     
     [agoraRtc leaveChannel:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRemoteAssistantStoped object:nil userInfo:nil];
 }
 
 - (void)sendControlCommand:(AgoraRemoteOperationType)type info:(NSDictionary *)info {
@@ -215,7 +223,7 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
                         [strongSelf stopRemoteAssistant];
                     }
                     else {
-                        [weakSelf handleRemoteOperation:operation];
+                        [strongSelf handleRemoteOperation:operation];
                     }
                 }
             }
@@ -224,78 +232,45 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
 }
 
 - (void)handleRemoteOperation:(AgoraRemoteOperation *)operation {
+    if (operation.type >= AgoraRemoteOperationTypeMouseLeftButtonDown &&
+        operation.type <= AgoraRemoteOperationTypeMouseMove) {
+        NSDictionary *point = operation.extraInfo[@"point"];
+        CGFloat x = [point[@"x"] floatValue];
+        CGFloat y = [point[@"y"] floatValue];
+        if (!CGSizeEqualToSize(videoSize, screenSize)) {
+            x = x / videoSize.width * screenSize.width;
+            x = y / videoSize.height * screenSize.height;
+        }
+        [mouse moveMouseTo:CGPointMake(x, y)];
+    }
+    
     switch (operation.type) {
         case AgoraRemoteOperationTypeMouseLeftButtonDown:
-        {
-            NSDictionary *point = operation.extraInfo[@"point"];
-            CGFloat x = [point[@"x"] floatValue];
-            CGFloat y = [point[@"y"] floatValue];
-            [mouse moveMouseTo:CGPointMake(x, y)];
-        }
             [mouse leftMouseDown:NO];
             break;
             
         case AgoraRemoteOperationTypeMouseLeftButtonUp:
-        {
-            NSDictionary *point = operation.extraInfo[@"point"];
-            CGFloat x = [point[@"x"] floatValue];
-            CGFloat y = [point[@"y"] floatValue];
-            [mouse moveMouseTo:CGPointMake(x, y)];
-        }
             [mouse leftMouseUp:NO];
             break;
             
         case AgoraRemoteOperationTypeMouseLeftButtonDoubleClick:
-        {
-            NSDictionary *point = operation.extraInfo[@"point"];
-            CGFloat x = [point[@"x"] floatValue];
-            CGFloat y = [point[@"y"] floatValue];
-            [mouse moveMouseTo:CGPointMake(x, y)];
-        }
             [mouse leftMouseDown:YES];
-            [mouse leftMouseDown:YES];
+            [mouse leftMouseUp:YES];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonDown:
-        {
-            NSDictionary *point = operation.extraInfo[@"point"];
-            CGFloat x = [point[@"x"] floatValue];
-            CGFloat y = [point[@"y"] floatValue];
-            [mouse moveMouseTo:CGPointMake(x, y)];
-        }
             [mouse rightMouseDown];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonUp:
-        {
-            NSDictionary *point = operation.extraInfo[@"point"];
-            CGFloat x = [point[@"x"] floatValue];
-            CGFloat y = [point[@"y"] floatValue];
-            [mouse moveMouseTo:CGPointMake(x, y)];
-        }
             [mouse rightMouseUp];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonDoubleClick:
-        {
-            NSDictionary *point = operation.extraInfo[@"point"];
-            CGFloat x = [point[@"x"] floatValue];
-            CGFloat y = [point[@"y"] floatValue];
-            [mouse moveMouseTo:CGPointMake(x, y)];
-        }
             [mouse rightMouseDown];
             [mouse rightMouseUp];
             [mouse rightMouseDown];
             [mouse rightMouseUp];
-            break;
-            
-        case AgoraRemoteOperationTypeMouseMove:
-        {
-            NSDictionary *point = operation.extraInfo[@"point"];
-            CGFloat x = [point[@"x"] floatValue];
-            CGFloat y = [point[@"y"] floatValue];
-            [mouse moveMouseTo:CGPointMake(x, y)];
-        }
             break;
             
         case AgoraRemoteOperationTypeMouseWheel:
@@ -431,37 +406,51 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
 #pragma mark - AgoraRemoteAssistantViewDelegate
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseLeftButtonDown:(CGPoint)position {
-    NSDictionary *info = @{@"point": @{@"x": @(position.x), @"y": @(position.y)}};
+    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
+    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseLeftButtonDown info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseLeftButtonUp:(CGPoint)position {
-    NSDictionary *info = @{@"point": @{@"x": @(position.x), @"y": @(position.y)}};
+    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
+    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseLeftButtonUp info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseLeftButtonDoubleClick:(CGPoint)position {
-    NSDictionary *info = @{@"point": @{@"x": @(position.x), @"y": @(position.y)}};
+    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
+    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseLeftButtonDoubleClick info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseRightButtonDown:(CGPoint)position {
-    NSDictionary *info = @{@"point": @{@"x": @(position.x), @"y": @(position.y)}};
+    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
+    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseRightButtonDown info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseRightButtonUp:(CGPoint)position {
-    NSDictionary *info = @{@"point": @{@"x": @(position.x), @"y": @(position.y)}};
+    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
+    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseRightButtonUp info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseRightButtonDoubleClick:(CGPoint)position {
-    NSDictionary *info = @{@"point": @{@"x": @(position.x), @"y": @(position.y)}};
+    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
+    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseRightButtonDoubleClick info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseMove:(CGPoint)position {
-    NSDictionary *info = @{@"point": @{@"x": @(position.x), @"y": @(position.y)}};
+    CGFloat x = position.x / view.bounds.size.width * videoSize.width;
+    CGFloat y = position.y / view.bounds.size.height * videoSize.height;
+    NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseMove info:info];
 }
 
@@ -528,6 +517,11 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
 }
 
 - (void)rtcEngine:(AgoraRtcEngineKit * _Nonnull)engine videoSizeChangedOfUid:(NSUInteger)uid size:(CGSize)size rotation:(NSInteger)rotation {
+    if (uid == 0) {
+        videoSize = size;
+        return;
+    }
+    
     if (videoView == nil) {
         return;
     }
@@ -553,7 +547,9 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
 }
 
 - (void)rtcEngine:(AgoraRtcEngineKit *)engine didOfflineOfUid:(NSUInteger)uid reason:(AgoraUserOfflineReason)reason {
-    
+    if ([self.selectedRemoteUser integerValue] == uid) {
+        [self stopRemoteAssistant];
+    }
 }
 
 @end

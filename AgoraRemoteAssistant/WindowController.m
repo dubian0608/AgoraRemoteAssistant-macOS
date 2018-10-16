@@ -8,6 +8,7 @@
 
 #import "WindowController.h"
 #import "RemoteAssistantViewController.h"
+#import "AgoraRemoteAssistantCenter.h"
 
 @interface WindowController () <NSWindowDelegate>
 
@@ -24,7 +25,7 @@
 
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     if ([self.window.contentViewController isMemberOfClass:[RemoteAssistantViewController class]]) {
-        [(RemoteAssistantViewController *)self.window.contentViewController close];
+        [[AgoraRemoteAssistantCenter sharedInstance] stopRemoteAssistant];
         return NO;
     }
     return YES;

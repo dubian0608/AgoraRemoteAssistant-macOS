@@ -25,12 +25,17 @@
     [super viewDidAppear];
     if ([[AgoraRemoteAssistantCenter sharedInstance] startRemoteAssistant:self.videoView]) {
         [self.view.window toggleFullScreen:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(close) name:kNotificationRemoteAssistantStoped object:nil];
     }
 }
 
+- (void)viewWillDisappear {
+    [super viewWillDisappear];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void)close {
-    [[AgoraRemoteAssistantCenter sharedInstance] stopRemoteAssistant];
-    
     if ((self.view.window.styleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen) {
         [self.view.window toggleFullScreen:nil];
     }

@@ -103,32 +103,38 @@
     if (self.window.firstResponder != self) {
         [self.window makeFirstResponder:self];
     }
-    [self.delegate remoteAssistantView:self mouseLeftButtonDown:event.locationInWindow];
+    NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
+    [self.delegate remoteAssistantView:self mouseLeftButtonDown:location];
 }
 
 - (void)mouseUp:(NSEvent *)event {
     NSLog(@"mouseUp: %@", event);
-    [self.delegate remoteAssistantView:self mouseLeftButtonUp:event.locationInWindow];
+    NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
+    [self.delegate remoteAssistantView:self mouseLeftButtonUp:location];
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
     NSLog(@"rightMouseDown: %@", event);
-    [self.delegate remoteAssistantView:self mouseRightButtonDown:event.locationInWindow];
+    NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
+    [self.delegate remoteAssistantView:self mouseRightButtonDown:location];
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
     NSLog(@"rightMouseUp: %@", event);
-    [self.delegate remoteAssistantView:self mouseRightButtonUp:event.locationInWindow];
+    NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
+    [self.delegate remoteAssistantView:self mouseRightButtonUp:location];
 }
 
 - (void)mouseDragged:(NSEvent *)event {
     NSLog(@"mouseDragged: %@", event);
-    [self.delegate remoteAssistantView:self mouseMove:event.locationInWindow];
+    NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
+    [self.delegate remoteAssistantView:self mouseMove:location];
 }
 
 - (void)mouseMoved:(NSEvent *)event {
     NSLog(@"mouseMoved: %@", event);
-    [self.delegate remoteAssistantView:self mouseMove:event.locationInWindow];
+    NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
+    [self.delegate remoteAssistantView:self mouseMove:location];
 }
 
 - (void)scrollWheel:(NSEvent *)event {

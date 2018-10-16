@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #define kNotificationRemoteUserListUpdated      @"kNotificationRemoteUserListUpdated"
+#define kNotificationRemoteAssistantStoped      @"kNotificationRemoteAssistantStoped"
 
 @interface AgoraRemoteAssistantCenter : NSObject
 

@@ -31,6 +31,7 @@
 
 - (void)viewWillAppear {
     [super viewWillAppear];
+    
     self.channelTextField.stringValue = [AgoraRemoteAssistantCenter sharedInstance].channel ? [AgoraRemoteAssistantCenter sharedInstance].channel : @"";
     self.uidTextField.stringValue = [AgoraRemoteAssistantCenter sharedInstance].account ? [AgoraRemoteAssistantCenter sharedInstance].account : @"";
     if ([AgoraRemoteAssistantCenter sharedInstance].joined) {
@@ -65,6 +66,7 @@
 }
 
 - (void)viewWillDisappear {
+    [super viewWillDisappear];
     [[NSNotificationCenter defaultCenter] removeObserver:remoteUserListUpdatedObserver];
     remoteUserListUpdatedObserver = nil;
 }
