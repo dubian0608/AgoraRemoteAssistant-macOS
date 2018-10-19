@@ -28,9 +28,7 @@
 	<string>Main</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-    <key>NSCameraUsageDescription</key>
-    <string>Use camera to start video call</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>Use microphone to start video call</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Use microphone to start audio call</string>
 </dict>
 </plist>

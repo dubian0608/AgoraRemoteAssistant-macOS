@@ -15,6 +15,7 @@
 #import <AgoraSigKit/AgoraSigKit.h>
 
 static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
+//static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
 
 @interface AgoraRemoteAssistantCenter () <AgoraRemoteAssistantViewDelegate, AgoraRtcEngineDelegate>
 {
@@ -122,9 +123,9 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
     [agoraRtc joinChannelByToken:nil channelId:self.channel info:nil uid:localUid joinSuccess:^(NSString * channel, NSUInteger uid, NSInteger elapsed) {
         __strong typeof(self) strongSelf = weakSelf;
         if (strongSelf && !strongSelf->parentView) {
-            [strongSelf->agoraRtc enableLocalVideo:YES];
             [strongSelf->agoraRtc startScreenCapture:0 withCaptureFreq:15 bitRate:0 andRect:CGRectZero];
             [strongSelf->agoraRtc setVideoResolution:strongSelf->screenSize andFrameRate:15 bitrate:2000];
+            [strongSelf->agoraRtc enableLocalVideo:YES];
         }
     }];
     

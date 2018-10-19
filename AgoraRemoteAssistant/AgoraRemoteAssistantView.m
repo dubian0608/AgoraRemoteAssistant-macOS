@@ -90,12 +90,14 @@
 
 - (void)keyDown:(NSEvent *)event {
     NSLog(@"keyDown: %@", event);
-    [self.delegate remoteAssistantView:self keyboardKeyDown:[event.characters characterAtIndex:0]];
+    [self.delegate remoteAssistantView:self keyboardKeyDown:event.keyCode];
+    //[self.delegate remoteAssistantView:self keyboardKeyDown:[event.characters characterAtIndex:0]];
 }
 
 - (void)keyUp:(NSEvent *)event {
     NSLog(@"keyUp: %@", event);
-    [self.delegate remoteAssistantView:self keyboardKeyUp:[event.characters characterAtIndex:0]];
+    [self.delegate remoteAssistantView:self keyboardKeyUp:event.keyCode];
+    //[self.delegate remoteAssistantView:self keyboardKeyUp:[event.characters characterAtIndex:0]];
 }
 
 - (void)mouseDown:(NSEvent *)event {
