@@ -98,22 +98,30 @@
     CFRelease(scrollEvent);
 }
 
-- (void)rightMouseDown:(CGPoint)position
+- (void)rightMouseDown:(BOOL)isDoubleClick position:(CGPoint)position
 {
     CGEventRef mouseEv = CGEventCreateMouseEvent(NULL,
                                                  kCGEventRightMouseDown,
                                                  position,
                                                  kCGMouseButtonRight);
+    if (isDoubleClick)
+    {
+        CGEventSetIntegerValueField(mouseEv, kCGMouseEventClickState, 2);
+    }
     CGEventPost(kCGHIDEventTap, mouseEv);
     CFRelease(mouseEv);
 }
 
-- (void)rightMouseUp:(CGPoint)position
+- (void)rightMouseUp:(BOOL)isDoubleClick position:(CGPoint)position
 {
     CGEventRef mouseEv = CGEventCreateMouseEvent(NULL,
                                                  kCGEventRightMouseUp,
                                                  position,
                                                  kCGMouseButtonRight);
+    if (isDoubleClick)
+    {
+        CGEventSetIntegerValueField(mouseEv, kCGMouseEventClickState, 2);
+    }
     CGEventPost(kCGHIDEventTap, mouseEv);
     CFRelease(mouseEv);
 }

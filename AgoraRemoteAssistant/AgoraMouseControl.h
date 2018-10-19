@@ -10,8 +10,8 @@
 - (void)moveMouseTo:(CGPoint)position;
 - (void)mouseScrollVertical:(int)scrollLength;
 - (void)mouseScrollHorizontal:(int)scrollLength;
-- (void)rightMouseDown:(CGPoint)position;
-- (void)rightMouseUp:(CGPoint)position;
+- (void)rightMouseDown:(BOOL)isDoubleClick position:(CGPoint)position;
+- (void)rightMouseUp:(BOOL)isDoubleClick position:(CGPoint)position;
 - (void)zoom:(int)value count:(int)count;
 
 @end

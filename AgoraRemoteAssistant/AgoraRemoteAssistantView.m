@@ -104,25 +104,25 @@
         [self.window makeFirstResponder:self];
     }
     NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
-    [self.delegate remoteAssistantView:self mouseLeftButtonDown:location];
+    [self.delegate remoteAssistantView:self mouseLeftButtonDown:location isDoubleClick:event.clickCount == 2];
 }
 
 - (void)mouseUp:(NSEvent *)event {
     NSLog(@"mouseUp: %@", event);
     NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
-    [self.delegate remoteAssistantView:self mouseLeftButtonUp:location];
+    [self.delegate remoteAssistantView:self mouseLeftButtonUp:location isDoubleClick:event.clickCount == 2];
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
     NSLog(@"rightMouseDown: %@", event);
     NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
-    [self.delegate remoteAssistantView:self mouseRightButtonDown:location];
+    [self.delegate remoteAssistantView:self mouseRightButtonDown:location isDoubleClick:event.clickCount == 2];
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
     NSLog(@"rightMouseUp: %@", event);
     NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
-    [self.delegate remoteAssistantView:self mouseRightButtonUp:location];
+    [self.delegate remoteAssistantView:self mouseRightButtonUp:location isDoubleClick:event.clickCount == 2];
 }
 
 - (void)mouseDragged:(NSEvent *)event {
