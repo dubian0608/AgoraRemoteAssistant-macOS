@@ -124,8 +124,8 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
         __strong typeof(self) strongSelf = weakSelf;
         if (strongSelf && !strongSelf->parentView) {
             [strongSelf->agoraRtc startScreenCapture:0 withCaptureFreq:15 bitRate:0 andRect:CGRectZero];
-            [strongSelf->agoraRtc setVideoResolution:strongSelf->screenSize andFrameRate:15 bitrate:2000];
             [strongSelf->agoraRtc enableLocalVideo:YES];
+            [strongSelf->agoraRtc setVideoResolution:strongSelf->screenSize andFrameRate:15 bitrate:2000];
         }
     }];
     
