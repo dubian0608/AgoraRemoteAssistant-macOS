@@ -74,7 +74,7 @@
     // length of scroll from -10 to 10 higher values lead to undef behaviour
     //scrollDirection = (scrollDirection < -10) ? -10 : ((scrollDirection > 10) ? 10 : scrollDirection);
     CGEventRef scrollEvent = CGEventCreateScrollWheelEvent (NULL,
-                                                            kCGScrollEventUnitLine,  // kCGScrollEventUnitLine  //kCGScrollEventUnitPixel
+                                                            kCGScrollEventUnitPixel,  // kCGScrollEventUnitLine  //
                                                             1, //CGWheelCount 1 = y 2 = xy 3 = xyz
                                                             scrollLength);
     
@@ -88,7 +88,7 @@
     // length of scroll from -10 to 10 higher values lead to undef behaviour
     //scrollDirection = (scrollDirection < -10) ? -10 : ((scrollDirection > 10) ? 10 : scrollDirection);
     CGEventRef scrollEvent = CGEventCreateScrollWheelEvent (NULL,
-                                                            kCGScrollEventUnitLine,  // kCGScrollEventUnitLine  //kCGScrollEventUnitPixel
+                                                            kCGScrollEventUnitPixel,  // kCGScrollEventUnitLine  //kCGScrollEventUnitPixel
                                                             2, //CGWheelCount 1 = y 2 = xy 3 = xyz
                                                             0,
                                                             scrollLength);
