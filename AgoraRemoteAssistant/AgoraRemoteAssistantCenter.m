@@ -67,8 +67,6 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
         mouse = [AgoraMouseControl getInstance];
         
         screenSize = NSScreen.mainScreen.frame.size;
-        self.channel = @"baluoteliz";
-        self.localUid = 67890;
     }
     return self;
 }
