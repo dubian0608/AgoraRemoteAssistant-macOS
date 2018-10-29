@@ -33,7 +33,12 @@
     [super viewWillAppear];
     
     self.channelTextField.stringValue = [AgoraRemoteAssistantCenter sharedInstance].channel ? [AgoraRemoteAssistantCenter sharedInstance].channel : @"";
-    self.uidTextField.stringValue = [AgoraRemoteAssistantCenter sharedInstance].account ? [AgoraRemoteAssistantCenter sharedInstance].account : @"";
+    if ([AgoraRemoteAssistantCenter sharedInstance].localUid == 0) {
+        self.uidTextField.stringValue = @"";
+    }
+    else {
+        self.uidTextField.stringValue = [NSString stringWithFormat:@"%ld", [AgoraRemoteAssistantCenter sharedInstance].localUid];
+    }
     if ([AgoraRemoteAssistantCenter sharedInstance].joined) {
         self.channelTextField.enabled = NO;
         self.uidTextField.enabled = NO;
@@ -50,7 +55,7 @@
     [self.remoteUsersTableView reloadData];
     
     if ([AgoraRemoteAssistantCenter sharedInstance].selectedRemoteUser) {
-        NSUInteger selectedRow = [[AgoraRemoteAssistantCenter sharedInstance].remoteUsers indexOfObject:[AgoraRemoteAssistantCenter sharedInstance].selectedRemoteUser];
+        NSUInteger selectedRow = [[AgoraRemoteAssistantCenter sharedInstance].remoteUsers indexOfObject:@([AgoraRemoteAssistantCenter sharedInstance].selectedRemoteUser)];
         if (selectedRow != NSNotFound) {
             [self.remoteUsersTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
         }
@@ -101,7 +106,7 @@
     }
     else {
         [AgoraRemoteAssistantCenter sharedInstance].channel = self.channelTextField.stringValue;
-        [AgoraRemoteAssistantCenter sharedInstance].account = self.uidTextField.stringValue;
+        [AgoraRemoteAssistantCenter sharedInstance].localUid = [self.uidTextField.stringValue integerValue];
         if ([[AgoraRemoteAssistantCenter sharedInstance] join]) {
             self.channelTextField.enabled = NO;
             self.uidTextField.enabled = NO;

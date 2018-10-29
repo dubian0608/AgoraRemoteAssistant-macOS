@@ -14,15 +14,13 @@
 #import <AgoraRtcEngineKit/AgoraRtcEngineKit.h>
 #import <AgoraSigKit/AgoraSigKit.h>
 
-static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
-//static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
+static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
 
 @interface AgoraRemoteAssistantCenter () <AgoraRemoteAssistantViewDelegate, AgoraRtcEngineDelegate>
 {
     BOOL _joined;
     NSMutableArray *_remoteUsers;
-    
-    NSString *_operatingRemoteUser;
+    NSInteger _remoteUid;
     
     AgoraRtcEngineKit *agoraRtc;
     AgoraAPI *agoraSig;
@@ -56,9 +54,12 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
 - (instancetype)init {
     self = [super init];
     if (self) {
+        _remoteUsers = [[NSMutableArray alloc] init];
+        
         agoraRtc = [AgoraRtcEngineKit sharedEngineWithAppId:kAppID delegate:self];
         [agoraRtc setChannelProfile:AgoraChannelProfileCommunication];
         [agoraRtc enableVideo];
+        [agoraRtc disableAudio];
         
         [self initSig];
         
@@ -66,6 +67,8 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
         mouse = [AgoraMouseControl getInstance];
         
         screenSize = NSScreen.mainScreen.frame.size;
+        self.channel = @"baluoteliz";
+        self.localUid = 67890;
     }
     return self;
 }
@@ -79,16 +82,19 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
 }
 
 - (BOOL)join {
-    if (self.channel.length == 0 || self.account.length == 0) {
+    if (self.channel.length == 0 || self.localUid == 0) {
         return NO;
     }
     
     if (self.joined) {
         [self leave];
-        _joined = NO;
     }
     
-    [agoraSig login2:kAppID account:self.account token:@"_no_need_token" uid:0 deviceID:0 retry_time_in_s:10 retry_count:3];
+    [agoraRtc enableLocalVideo:NO];
+    [agoraRtc setDefaultMuteAllRemoteAudioStreams:YES];
+    [agoraRtc joinChannelByToken:nil channelId:self.channel info:nil uid:self.localUid joinSuccess:nil];
+    NSString *account = [NSString stringWithFormat:@"%ld", self.localUid];
+    [agoraSig login2:kAppID account:account token:@"_no_need_token" uid:0 deviceID:0 retry_time_in_s:10 retry_count:3];
     
     _joined = YES;
     return _joined;
@@ -97,44 +103,39 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
 - (void)leave {
     [self stopRemoteAssistant];
     
+    [agoraRtc leaveChannel:nil];
     [agoraSig logout];
+    
+    [_remoteUsers removeAllObjects];
+    _selectedRemoteUser = 0;
     _joined = NO;
-    _remoteUsers = nil;
-    _selectedRemoteUser = nil;
 }
 
 - (BOOL)startRemoteAssistant:(NSView *)view {
-    if ([agoraRtc getCallId]) {
+    if (_remoteUid != 0) {
         return NO;
     }
     
-    parentView = view;
-    videoView = nil;
-    remoteVideoSize = CGSizeZero;
-    
     if (view) {
+        parentView = view;
+        videoView = nil;
+        remoteVideoSize = CGSizeZero;
+        _remoteUid = self.selectedRemoteUser;
+        [agoraRtc muteRemoteVideoStream:_remoteUid mute:NO];
         [self sendControlCommand:AgoraRemoteOperationTypeStartAssistant info:nil];
     }
-    
-    NSInteger localUid = [self.account integerValue];
-    __weak typeof(self) weakSelf = self;
-    
-    [agoraRtc enableLocalVideo:NO];
-    [agoraRtc joinChannelByToken:nil channelId:self.channel info:nil uid:localUid joinSuccess:^(NSString * channel, NSUInteger uid, NSInteger elapsed) {
-        __strong typeof(self) strongSelf = weakSelf;
-        if (strongSelf && !strongSelf->parentView) {
-            [strongSelf->agoraRtc startScreenCapture:0 withCaptureFreq:15 bitRate:0 andRect:CGRectZero];
-            [strongSelf->agoraRtc enableLocalVideo:YES];
-            //[strongSelf->agoraRtc setVideoResolution:strongSelf->screenSize andFrameRate:15 bitrate:2000];
-            [strongSelf->agoraRtc setVideoResolution:CGSizeMake(1280, 800) andFrameRate:15 bitrate:2000];
-        }
-    }];
+    else {
+        [agoraRtc startScreenCapture:0 withCaptureFreq:15 bitRate:0 andRect:CGRectZero];
+        [agoraRtc enableLocalVideo:YES];
+        [agoraRtc setVideoResolution:screenSize andFrameRate:15 bitrate:2000];
+        //[agoraRtc setVideoResolution:CGSizeMake(1280, 800) andFrameRate:15 bitrate:2000];
+    }
     
     return YES;
 }
 
 - (void)stopRemoteAssistant {
-    if (![agoraRtc getCallId]) {
+    if (_remoteUid == 0) {
         return;
     }
     
@@ -144,15 +145,21 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
         
         [self sendControlCommand:AgoraRemoteOperationTypeStopAssistant info:nil];
         
+        AgoraRtcVideoCanvas *canvas = [[AgoraRtcVideoCanvas alloc] init];
+        canvas.uid = _remoteUid;
+        [agoraRtc setupRemoteVideo:canvas];
+        [agoraRtc muteRemoteVideoStream:_remoteUid mute:YES];
+        
         [videoView removeFromSuperview];
         videoView = nil;
         parentView = nil;
     }
     else {
-        _operatingRemoteUser = nil;
+        [agoraRtc enableLocalVideo:NO];
     }
     
-    [agoraRtc leaveChannel:nil];
+    _remoteUid = 0;
+    
     [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRemoteAssistantStoped object:nil userInfo:nil];
 }
 
@@ -161,7 +168,8 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
                                                                      timeStamp:[NSDate date].timeIntervalSince1970
                                                                      extraInfo:info];
     NSString *msg = [command convertToJsonString];
-    [agoraSig messageInstantSend:self.selectedRemoteUser uid:0 msg:msg msgID:nil];
+    NSString *remoteUser = [NSString stringWithFormat:@"%ld", _remoteUid];
+    [agoraSig messageInstantSend:remoteUser uid:0 msg:msg msgID:nil];
 }
 
 - (void)cacheMouseOperation:(AgoraRemoteOperationType)type info:(NSDictionary *)info {
@@ -185,7 +193,8 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
         
         for (AgoraRemoteOperation *command in mouseClickCache) {
             NSString *msg = [command convertToJsonString];
-            [agoraSig messageInstantSend:self.selectedRemoteUser uid:0 msg:msg msgID:nil];
+            NSString *remoteUser = [NSString stringWithFormat:@"%ld", self.selectedRemoteUser];
+            [agoraSig messageInstantSend:remoteUser uid:0 msg:msg msgID:nil];
         }
         [mouseClickCache removeAllObjects];
     }
@@ -196,9 +205,9 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
 - (void)initSig {
     __weak typeof(self) weakSelf = self;
     agoraSig = [AgoraAPI getInstanceWithoutMedia:kAppID];
-    //    signalEngine.onLog = ^(NSString *txt){
-    //        NSLog(@"%@", txt);
-    //    };
+//    signalEngine.onLog = ^(NSString *txt){
+//        NSLog(@"%@", txt);
+//    };
     agoraSig.onError = ^(NSString* name, AgoraEcode ecode, NSString* desc) {
         NSLog(@"onError, name: %@, code:%lu, desc: %@", name, ecode, desc);
     };
@@ -215,37 +224,37 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
             NSLog(@"onLogout, ecode: %lu", ecode);
         }
     };
-    agoraSig.onChannelJoinFailed = ^(NSString *channelID, AgoraEcode ecode) {
-        NSLog(@"Join sig channel failed, error: %lu", ecode);
-    };
-    agoraSig.onChannelJoined = ^(NSString *channelID) {
-        NSLog(@"Join sig channel successfully");
-    };
-    agoraSig.onChannelLeaved = ^(NSString *channelID, AgoraEcode ecode) {
-        if (ecode != AgoraEcode_LEAVECHANNEL_E_BYUSER) {
-            NSLog(@"onChannelLeaved, ecode: %lu", ecode);
-        }
-    };
-    agoraSig.onChannelUserList = ^(NSMutableArray *accounts, NSMutableArray *uids) {
-        __strong typeof(self) strongSelf = weakSelf;
-        [accounts removeObject:strongSelf.account];
-        NSLog(@"onChannelUserList, accounts: %@", accounts);
-        
-        strongSelf->_remoteUsers = accounts;
-        [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRemoteUserListUpdated object:strongSelf->_remoteUsers userInfo:nil];
-    };
-    agoraSig.onChannelUserJoined = ^(NSString *account, uint32_t uid) {
-        NSLog(@"onChannelUserJoined, account: %@", account);
-        __strong typeof(self) strongSelf = weakSelf;
-        [strongSelf->_remoteUsers addObject:account];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRemoteUserListUpdated object:strongSelf->_remoteUsers userInfo:nil];
-    };
-    agoraSig.onChannelUserLeaved = ^(NSString *account, uint32_t uid) {
-        NSLog(@"onChannelUserLeaved, account: %@", account);
-        __strong typeof(self) strongSelf = weakSelf;
-        [strongSelf->_remoteUsers removeObject:account];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRemoteUserListUpdated object:strongSelf->_remoteUsers userInfo:nil];
-    };
+//    agoraSig.onChannelJoinFailed = ^(NSString *channelID, AgoraEcode ecode) {
+//        NSLog(@"Join sig channel failed, error: %lu", ecode);
+//    };
+//    agoraSig.onChannelJoined = ^(NSString *channelID) {
+//        NSLog(@"Join sig channel successfully");
+//    };
+//    agoraSig.onChannelLeaved = ^(NSString *channelID, AgoraEcode ecode) {
+//        if (ecode != AgoraEcode_LEAVECHANNEL_E_BYUSER) {
+//            NSLog(@"onChannelLeaved, ecode: %lu", ecode);
+//        }
+//    };
+//    agoraSig.onChannelUserList = ^(NSMutableArray *accounts, NSMutableArray *uids) {
+//        __strong typeof(self) strongSelf = weakSelf;
+//        [accounts removeObject:strongSelf.account];
+//        NSLog(@"onChannelUserList, accounts: %@", accounts);
+//
+//        strongSelf->_remoteUsers = accounts;
+//        [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRemoteUserListUpdated object:strongSelf->_remoteUsers userInfo:nil];
+//    };
+//    agoraSig.onChannelUserJoined = ^(NSString *account, uint32_t uid) {
+//        NSLog(@"onChannelUserJoined, account: %@", account);
+//        __strong typeof(self) strongSelf = weakSelf;
+//        [strongSelf->_remoteUsers addObject:account];
+//        [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRemoteUserListUpdated object:strongSelf->_remoteUsers userInfo:nil];
+//    };
+//    agoraSig.onChannelUserLeaved = ^(NSString *account, uint32_t uid) {
+//        NSLog(@"onChannelUserLeaved, account: %@", account);
+//        __strong typeof(self) strongSelf = weakSelf;
+//        [strongSelf->_remoteUsers removeObject:account];
+//        [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRemoteUserListUpdated object:strongSelf->_remoteUsers userInfo:nil];
+//    };
     agoraSig.onMessageInstantReceive = ^(NSString *account, uint32_t uid, NSString *msg) {
         NSArray<AgoraRemoteOperation *> *operations = [AgoraRemoteOperation parseJsonString:msg];
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -254,10 +263,10 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
             for (AgoraRemoteOperation *operation in operations) {
                 if (operation.type == AgoraRemoteOperationTypeStartAssistant) {
                     if ([strongSelf startRemoteAssistant:nil]) {
-                        strongSelf->_operatingRemoteUser = account;
+                        strongSelf->_remoteUid = [account integerValue];
                     }
                 }
-                else if ([account isEqualToString:strongSelf->_operatingRemoteUser]) {
+                else if ([account integerValue] == strongSelf->_remoteUid) {
                     if (operation.type == AgoraRemoteOperationTypeStopAssistant) {
                         [strongSelf stopRemoteAssistant];
                     }
@@ -548,8 +557,24 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
 
 #pragma mark - AgoraRtcEngineDelegate
 
-- (void)rtcEngine:(AgoraRtcEngineKit *)engine didOccurError:(AgoraErrorCode)errorCode {
-    NSLog(@"rtc engine error: %ld", errorCode);
+- (void)rtcEngine:(AgoraRtcEngineKit *)engine didJoinChannel:(NSString *)channel withUid:(NSUInteger)uid elapsed:(NSInteger) elapsed {
+    NSLog(@"join channel success");
+}
+
+- (void)rtcEngine:(AgoraRtcEngineKit *)engine didJoinedOfUid:(NSUInteger)uid elapsed:(NSInteger)elapsed {
+    NSLog(@"remote user joined, uid: %ld", uid);
+    [_remoteUsers addObject:@(uid)];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRemoteUserListUpdated object:_remoteUsers userInfo:nil];
+}
+
+- (void)rtcEngine:(AgoraRtcEngineKit *)engine didOfflineOfUid:(NSUInteger)uid reason:(AgoraUserOfflineReason)reason {
+    NSLog(@"remote user offline, uid: %ld", uid);
+    if (self.selectedRemoteUser == uid) {
+        [self stopRemoteAssistant];
+    }
+    
+    [_remoteUsers removeObject:@(uid)];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationRemoteUserListUpdated object:_remoteUsers userInfo:nil];
 }
 
 - (void)rtcEngine:(AgoraRtcEngineKit *)engine firstRemoteVideoDecodedOfUid:(NSUInteger)uid size:(CGSize)size elapsed:(NSInteger)elapsed {
@@ -557,8 +582,7 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
         return;
     }
     
-    NSInteger remoteUid = [self.selectedRemoteUser integerValue];
-    if (uid != remoteUid) {
+    if (uid != _remoteUid) {
         return;
     }
     
@@ -568,7 +592,7 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
         [self addVideoView];
         
         AgoraRtcVideoCanvas *canvas = [[AgoraRtcVideoCanvas alloc] init];
-        canvas.uid = remoteUid;
+        canvas.uid = uid;
         canvas.view = videoView;
         canvas.renderMode = AgoraVideoRenderModeFit;
         [agoraRtc setupRemoteVideo:canvas];
@@ -598,8 +622,7 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
         return;
     }
     
-    NSInteger remoteUid = [self.selectedRemoteUser integerValue];
-    if (uid != remoteUid) {
+    if (uid != _remoteUid) {
         return;
     }
     
@@ -616,12 +639,6 @@ static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
                                                                       multiplier:size.width/size.height
                                                                         constant:0];
     [videoView addConstraint:ratioConstraint];
-}
-
-- (void)rtcEngine:(AgoraRtcEngineKit *)engine didOfflineOfUid:(NSUInteger)uid reason:(AgoraUserOfflineReason)reason {
-    if ([self.selectedRemoteUser integerValue] == uid) {
-        [self stopRemoteAssistant];
-    }
 }
 
 @end

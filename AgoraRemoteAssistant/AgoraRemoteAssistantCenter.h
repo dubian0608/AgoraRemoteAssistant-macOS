@@ -16,10 +16,10 @@
 + (instancetype)sharedInstance;
 
 @property (copy) NSString *channel;
-@property (copy) NSString *account;
+@property (assign) NSUInteger localUid;
 @property (assign, readonly) BOOL joined;
 @property (copy, readonly) NSArray *remoteUsers;
-@property (copy) NSString *selectedRemoteUser;
+@property (assign) NSUInteger selectedRemoteUser;
 
 - (BOOL)join;
 - (void)leave;
