@@ -86,10 +86,10 @@
     if ([segue.identifier isEqualToString:@"startRemoteAssistant"]) {
         NSUInteger selectedRow = self.remoteUsersTableView.selectedRow;
         if (selectedRow == NSUIntegerMax) {
-            [AgoraRemoteAssistantCenter sharedInstance].selectedRemoteUser = [AgoraRemoteAssistantCenter sharedInstance].remoteUsers.firstObject;
+            [AgoraRemoteAssistantCenter sharedInstance].selectedRemoteUser = [[AgoraRemoteAssistantCenter sharedInstance].remoteUsers.firstObject integerValue];
         }
         else {
-            [AgoraRemoteAssistantCenter sharedInstance].selectedRemoteUser = [AgoraRemoteAssistantCenter sharedInstance].remoteUsers[selectedRow];
+            [AgoraRemoteAssistantCenter sharedInstance].selectedRemoteUser = [[AgoraRemoteAssistantCenter sharedInstance].remoteUsers[selectedRow] integerValue];
         }
     }
 }
@@ -123,7 +123,8 @@
     if (row >= [AgoraRemoteAssistantCenter sharedInstance].remoteUsers.count) {
         return nil;
     }
-    return [AgoraRemoteAssistantCenter sharedInstance].remoteUsers[row];
+    NSNumber *remoteUser = [AgoraRemoteAssistantCenter sharedInstance].remoteUsers[row];
+    return [NSString stringWithFormat:@"%ld", [remoteUser integerValue]];
 }
 
 @end

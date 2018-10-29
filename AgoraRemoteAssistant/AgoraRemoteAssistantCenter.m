@@ -611,6 +611,7 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
 }
 
 - (void)rtcEngine:(AgoraRtcEngineKit * _Nonnull)engine videoSizeChangedOfUid:(NSUInteger)uid size:(CGSize)size rotation:(NSInteger)rotation {
+    NSLog(@"video size changed, uid: %ld, size: %f x %f", uid, size.width, size.height);
     if (uid == 0) {
         localVideoSize = size;
         return;

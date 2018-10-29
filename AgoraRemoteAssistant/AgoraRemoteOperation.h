@@ -46,7 +46,7 @@ enum KeyboardTransferType {
     eKeyboardType_End,
     eKeyboardType_Insert,
     eKeyboardType_Delete,
-    eKeyboardType_Comma,//~,`
+    eKeyboardType_Comma, // ~,`
     eKeyboardType_Num0,
     eKeyboardType_Num1,
     eKeyboardType_Num2,
@@ -57,8 +57,8 @@ enum KeyboardTransferType {
     eKeyboardType_Num7,
     eKeyboardType_Num8,
     eKeyboardType_Num9,
-    eKeyboardType_Sub,//_,-
-    eKeyboardType_Equ,//+,=
+    eKeyboardType_Sub, // _,-
+    eKeyboardType_Equ, // +,=
     eKeyboardType_BackSpace,
     eKeyboardType_Tab,
     eKeyboardType_Q,
@@ -71,10 +71,10 @@ enum KeyboardTransferType {
     eKeyboardType_I,
     eKeyboardType_O,
     eKeyboardType_P,
-    eKeyboardType_Left_Parentheses,//{,[
-    eKeyboardType_Right_Parentheses,//},]
-    eKeyboardType_Right_Slash,//\,|
-    eKeyboardType_CapsLock,//uppercase and lowercase switch
+    eKeyboardType_Left_Parentheses, // {,[
+    eKeyboardType_Right_Parentheses, // },]
+    eKeyboardType_Right_Slash, // \,|
+    eKeyboardType_CapsLock, // uppercase and lowercase switch
     eKeyboardType_A,
     eKeyboardType_S,
     eKeyboardType_D,
@@ -84,8 +84,8 @@ enum KeyboardTransferType {
     eKeyboardType_J,
     eKeyboardType_K,
     eKeyboardType_L,
-    eKeyboardType_colon,//;,:
-    eKeyboardType_quotation,//',"
+    eKeyboardType_colon, // ;,:
+    eKeyboardType_quotation, // ',"
     eKeyboardType_Enter,
     eKeyboardType_Left_Shift,
     eKeyboardType_Z,
@@ -95,9 +95,9 @@ enum KeyboardTransferType {
     eKeyboardType_B,
     eKeyboardType_N,
     eKeyboardType_M,
-    eKeyboardType_Left_brackets,//<,,
-    eKeyboardType_Right_brackets,//>,.
-    eKeyboardType_Question,//?,/
+    eKeyboardType_Left_brackets, // <,,
+    eKeyboardType_Right_brackets, // >,.
+    eKeyboardType_Question, // ?,/
     eKeyboardType_Right_Shift,
     eKeyboardType_Fn,
     eKeyboardType_Left_Ctrl,
