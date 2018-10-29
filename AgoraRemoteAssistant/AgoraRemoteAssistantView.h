@@ -20,9 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseMove:(CGPoint)position;
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseScrollHorizontal:(CGFloat)scrolDeltaX mouseScrollVertical:(CGFloat)scrolDeltaY;
 
-- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyPress:(unichar)keyCode;
-- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyDown:(unichar)keyCode;
-- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyUp:(unichar)keyCode;
+- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyPress:(CGKeyCode)keyCode;
+- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyDown:(CGKeyCode)keyCode;
+- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyUp:(CGKeyCode)keyCode;
 @end
 
 @interface AgoraRemoteAssistantView : NSView

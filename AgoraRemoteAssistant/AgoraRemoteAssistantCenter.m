@@ -14,7 +14,7 @@
 #import <AgoraRtcEngineKit/AgoraRtcEngineKit.h>
 #import <AgoraSigKit/AgoraSigKit.h>
 
-static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
+static NSString * const kAppID = @"aab8b8f5a8cd4469a63042fcfafe7063";
 //static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
 
 @interface AgoraRemoteAssistantCenter () <AgoraRemoteAssistantViewDelegate, AgoraRtcEngineDelegate>
@@ -125,7 +125,8 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
         if (strongSelf && !strongSelf->parentView) {
             [strongSelf->agoraRtc startScreenCapture:0 withCaptureFreq:15 bitRate:0 andRect:CGRectZero];
             [strongSelf->agoraRtc enableLocalVideo:YES];
-            [strongSelf->agoraRtc setVideoResolution:strongSelf->screenSize andFrameRate:15 bitrate:2000];
+            //[strongSelf->agoraRtc setVideoResolution:strongSelf->screenSize andFrameRate:15 bitrate:2000];
+            [strongSelf->agoraRtc setVideoResolution:CGSizeMake(1280, 800) andFrameRate:15 bitrate:2000];
         }
     }];
     
@@ -332,23 +333,32 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
             
         case AgoraRemoteOperationTypeKeyboardKeyPress:
         {
-            CGKeyCode keyCode = [operation.extraInfo[@"keyCode"] unsignedShortValue];
-            [keyboard sendKeyDown:keyCode];
-            [keyboard sendKeyUp:keyCode];
+            unichar agoraKeyCode = [operation.extraInfo[@"keyCode"] unsignedShortValue];
+            CGKeyCode keyCode = [AgoraRemoteOperation agoraKeyCodeToCGKeyCode:agoraKeyCode];
+            if (keyCode != USHRT_MAX) {
+                [keyboard sendKeyDown:keyCode];
+                [keyboard sendKeyUp:keyCode];
+            }
         }
             break;
             
         case AgoraRemoteOperationTypeKeyboardKeyDown:
         {
-            CGKeyCode keyCode = [operation.extraInfo[@"keyCode"] unsignedShortValue];
-            [keyboard sendKeyDown:keyCode];
+            unichar agoraKeyCode = [operation.extraInfo[@"keyCode"] unsignedShortValue];
+            CGKeyCode keyCode = [AgoraRemoteOperation agoraKeyCodeToCGKeyCode:agoraKeyCode];
+            if (keyCode != USHRT_MAX) {
+                [keyboard sendKeyDown:keyCode];
+            }
         }
             break;
             
         case AgoraRemoteOperationTypeKeyboardKeyUp:
         {
-            CGKeyCode keyCode = [operation.extraInfo[@"keyCode"] unsignedShortValue];
-            [keyboard sendKeyUp:keyCode];
+            unichar agoraKeyCode = [operation.extraInfo[@"keyCode"] unsignedShortValue];
+            CGKeyCode keyCode = [AgoraRemoteOperation agoraKeyCodeToCGKeyCode:agoraKeyCode];
+            if (keyCode != USHRT_MAX) {
+                [keyboard sendKeyUp:keyCode];
+            }
         }
             break;
             
@@ -518,18 +528,21 @@ static NSString * const kAppID = @"0c0b4b61adf94de1befd7cdd78a50444";
     [self sendControlCommand:AgoraRemoteOperationTypeMouseWheel info:info];
 }
 
-- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyPress:(unichar)keyCode {
-    NSDictionary *info = @{@"keyCode": @(keyCode)};
+- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyPress:(CGKeyCode)keyCode {
+    CGKeyCode agoraKeyCode = [AgoraRemoteOperation cgKeyCodeToAgoraKeyCode:keyCode];
+    NSDictionary *info = @{@"keyCode": @(agoraKeyCode)};
     [self sendControlCommand:AgoraRemoteOperationTypeKeyboardKeyPress info:info];
 }
 
-- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyDown:(unichar)keyCode {
-    NSDictionary *info = @{@"keyCode": @(keyCode)};
+- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyDown:(CGKeyCode)keyCode {
+    CGKeyCode agoraKeyCode = [AgoraRemoteOperation cgKeyCodeToAgoraKeyCode:keyCode];
+    NSDictionary *info = @{@"keyCode": @(agoraKeyCode)};
     [self sendControlCommand:AgoraRemoteOperationTypeKeyboardKeyDown info:info];
 }
 
-- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyUp:(unichar)keyCode {
-    NSDictionary *info = @{@"keyCode": @(keyCode)};
+- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyUp:(CGKeyCode)keyCode {
+    CGKeyCode agoraKeyCode = [AgoraRemoteOperation cgKeyCodeToAgoraKeyCode:keyCode];
+    NSDictionary *info = @{@"keyCode": @(agoraKeyCode)};
     [self sendControlCommand:AgoraRemoteOperationTypeKeyboardKeyUp info:info];
 }
 
