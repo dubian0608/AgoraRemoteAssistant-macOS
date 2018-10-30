@@ -542,6 +542,10 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseScrollHorizontal:(CGFloat)scrolDeltaX mouseScrollVertical:(CGFloat)scrolDeltaY {
+    if (scrolDeltaX < 1 && scrolDeltaY < 1) {
+        return;
+    }
+    
     NSDictionary *info = @{@"scrolDelta": @{@"x": @(scrolDeltaX), @"y": @(scrolDeltaY)}};
     [self sendCacheMouseOperations];
     [self sendControlCommand:AgoraRemoteOperationTypeMouseWheel info:info];
