@@ -26,6 +26,7 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     AgoraAPI *agoraSig;
     AgoraKeyboardControl *keyboard;
     AgoraMouseControl *mouse;
+    CGPoint mousePositon;
     
     NSView *parentView;
     AgoraRemoteAssistantView *videoView;
@@ -57,9 +58,11 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
         _remoteUsers = [[NSMutableArray alloc] init];
         
         agoraRtc = [AgoraRtcEngineKit sharedEngineWithAppId:kAppID delegate:self];
-        [agoraRtc setChannelProfile:AgoraChannelProfileCommunication];
-        [agoraRtc enableVideo];
+        [agoraRtc setChannelProfile:AgoraChannelProfileLiveBroadcasting];
+        [agoraRtc setClientRole:AgoraClientRoleBroadcaster];
         [agoraRtc disableAudio];
+        [agoraRtc enableVideo];
+        [agoraRtc enableDualStreamMode:NO];
         
         [self initSig];
         
@@ -89,7 +92,7 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     }
     
     [agoraRtc enableLocalVideo:NO];
-    [agoraRtc setDefaultMuteAllRemoteAudioStreams:YES];
+    [agoraRtc setDefaultMuteAllRemoteVideoStreams:YES];
     [agoraRtc joinChannelByToken:nil channelId:self.channel info:nil uid:self.localUid joinSuccess:nil];
     NSString *account = [NSString stringWithFormat:@"%ld", self.localUid];
     [agoraSig login2:kAppID account:account token:@"_no_need_token" uid:0 deviceID:0 retry_time_in_s:10 retry_count:3];
@@ -123,10 +126,11 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
         [self sendControlCommand:AgoraRemoteOperationTypeStartAssistant info:nil];
     }
     else {
-        [agoraRtc startScreenCapture:0 withCaptureFreq:15 bitRate:0 andRect:CGRectZero];
-        [agoraRtc enableLocalVideo:YES];
-        [agoraRtc setVideoResolution:screenSize andFrameRate:15 bitrate:2000];
-        //[agoraRtc setVideoResolution:CGSizeMake(1280, 800) andFrameRate:15 bitrate:2000];
+        mousePositon = CGPointZero;
+//        [agoraRtc startScreenCapture:0 withCaptureFreq:15 bitRate:0 andRect:CGRectZero];
+//        [agoraRtc enableLocalVideo:YES];
+//        [agoraRtc setVideoResolution:screenSize andFrameRate:15 bitrate:2000];
+//        //[agoraRtc setVideoResolution:CGSizeMake(1280, 800) andFrameRate:15 bitrate:2000];
     }
     
     return YES;
@@ -152,9 +156,9 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
         videoView = nil;
         parentView = nil;
     }
-    else {
-        [agoraRtc enableLocalVideo:NO];
-    }
+//    else {
+//        [agoraRtc enableLocalVideo:NO];
+//    }
     
     _remoteUid = 0;
     
@@ -282,14 +286,19 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     if (operation.type >= AgoraRemoteOperationTypeMouseLeftButtonDown &&
         operation.type <= AgoraRemoteOperationTypeMouseMove) {
         NSDictionary *point = operation.extraInfo[@"point"];
-        CGFloat x = [point[@"x"] floatValue];
-        CGFloat y = [point[@"y"] floatValue];
-        if (CGSizeEqualToSize(localVideoSize, screenSize)) {
-            position = CGPointMake(x, y);
+        if (point) {
+            CGFloat x = [point[@"x"] floatValue];
+            CGFloat y = [point[@"y"] floatValue];
+            if (CGSizeEqualToSize(localVideoSize, screenSize)) {
+                position = CGPointMake(x, y);
+            }
+            else {
+                position.x = x / localVideoSize.width * screenSize.width;
+                position.y = y / localVideoSize.height * screenSize.height;
+            }
         }
         else {
-            position.x = x / localVideoSize.width * screenSize.width;
-            position.y = y / localVideoSize.height * screenSize.height;
+            position = mousePositon;
         }
     }
     
@@ -322,6 +331,7 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
             
         case AgoraRemoteOperationTypeMouseMove:
             [mouse moveMouseTo:position];
+            mousePositon = position;
             break;
             
         case AgoraRemoteOperationTypeMouseWheel:
@@ -468,8 +478,8 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
 #pragma mark - AgoraRemoteAssistantViewDelegate
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseLeftButtonDown:(CGPoint)position isDoubleClick:(BOOL)isDoubleClick {
-    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
-    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
+    NSInteger x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    NSInteger y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     if (isDoubleClick) {
         [self clearMouseClickCache];
@@ -477,12 +487,13 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     else {
         [self sendCacheMouseOperations];
     }
+    [self cacheMouseOperation:AgoraRemoteOperationTypeMouseMove info:info];
     [self cacheMouseOperation:AgoraRemoteOperationTypeMouseLeftButtonDown info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseLeftButtonUp:(CGPoint)position isDoubleClick:(BOOL)isDoubleClick {
-    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
-    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
+    NSInteger x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    NSInteger y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     if (isDoubleClick) {
         [self sendCacheMouseOperations];
@@ -495,8 +506,8 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseRightButtonDown:(CGPoint)position isDoubleClick:(BOOL)isDoubleClick {
-    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
-    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
+    NSInteger x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    NSInteger y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     if (isDoubleClick) {
         [self clearMouseClickCache];
@@ -504,12 +515,13 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     else {
         [self sendCacheMouseOperations];
     }
+    [self cacheMouseOperation:AgoraRemoteOperationTypeMouseMove info:info];
     [self cacheMouseOperation:AgoraRemoteOperationTypeMouseRightButtonDown info:info];
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseRightButtonUp:(CGPoint)position isDoubleClick:(BOOL)isDoubleClick {
-    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
-    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
+    NSInteger x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    NSInteger y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     if (isDoubleClick) {
         [self sendCacheMouseOperations];
@@ -522,8 +534,8 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
 }
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseMove:(CGPoint)position {
-    CGFloat x = position.x / view.bounds.size.width * remoteVideoSize.width;
-    CGFloat y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
+    NSInteger x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    NSInteger y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     [self sendCacheMouseOperations];
     [self sendControlCommand:AgoraRemoteOperationTypeMouseMove info:info];
@@ -557,6 +569,10 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
 
 - (void)rtcEngine:(AgoraRtcEngineKit *)engine didJoinChannel:(NSString *)channel withUid:(NSUInteger)uid elapsed:(NSInteger) elapsed {
     NSLog(@"join channel success");
+    [agoraRtc startScreenCapture:0 withCaptureFreq:15 bitRate:0 andRect:CGRectZero];
+    [agoraRtc enableLocalVideo:YES];
+    [agoraRtc setVideoResolution:screenSize andFrameRate:15 bitrate:2000];
+    //[agoraRtc setVideoResolution:CGSizeMake(1280, 800) andFrameRate:15 bitrate:2000];
 }
 
 - (void)rtcEngine:(AgoraRtcEngineKit *)engine didJoinedOfUid:(NSUInteger)uid elapsed:(NSInteger)elapsed {

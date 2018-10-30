@@ -9,9 +9,9 @@
 #import "AgoraRemoteOperation.h"
 #import <Carbon/Carbon.h>
 
-static const NSString *KeyOfType = @"nCmdType";
-static const NSString *KeyOfTimeStamp = @"nTimeStamp";
-static const NSString *KeyOfExtraInfo = @"EventParam";
+static const NSString *KeyOfType = @"cmdType";
+static const NSString *KeyOfTimeStamp = @"timestamp";
+static const NSString *KeyOfExtraInfo = @"param";
 
 @implementation AgoraRemoteOperation
 
