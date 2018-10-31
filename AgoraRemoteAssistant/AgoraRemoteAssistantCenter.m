@@ -26,9 +26,7 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     AgoraAPI *agoraSig;
     AgoraKeyboardControl *keyboard;
     AgoraMouseControl *mouse;
-    NSTimer *mouseMoveTimer;
     CGPoint mousePositon;
-    BOOL wheelScrolling;
     
     NSView *parentView;
     AgoraRemoteAssistantView *videoView;
@@ -158,9 +156,7 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
         parentView = nil;
     }
     else {
-        [self stopMouseTimer];
         mousePositon = CGPointZero;
-        wheelScrolling = NO;
 //        [agoraRtc enableLocalVideo:NO];
     }
     
@@ -211,9 +207,9 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
 - (void)initSig {
     __weak typeof(self) weakSelf = self;
     agoraSig = [AgoraAPI getInstanceWithoutMedia:kAppID];
-//    signalEngine.onLog = ^(NSString *txt){
-//        NSLog(@"%@", txt);
-//    };
+//    agoraSig.onLog = ^(NSString *txt){
+//        NSLog(@"[signaling] %@", txt);
+//    };a
     agoraSig.onError = ^(NSString* name, AgoraEcode ecode, NSString* desc) {
         NSLog(@"onError, name: %@, code:%lu, desc: %@", name, ecode, desc);
     };
@@ -308,54 +304,40 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     
     switch (operation.type) {
         case AgoraRemoteOperationTypeMouseLeftButtonDown:
-            [self stopMouseTimer];
             [mouse leftMouseDown:NO position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseLeftButtonUp:
-            [self stopMouseTimer];
             [mouse leftMouseUp:NO position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseLeftButtonDoubleClick:
-            [self stopMouseTimer];
             [mouse leftMouseDown:YES position:position];
             [mouse leftMouseUp:YES position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonDown:
-            [self stopMouseTimer];
             [mouse rightMouseDown:NO position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonUp:
-            [self stopMouseTimer];
+            //[self stopMouseTimer];
             [mouse rightMouseUp:NO position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonDoubleClick:
-            [self stopMouseTimer];
+            //[self stopMouseTimer];
             [mouse rightMouseDown:YES position:position];
             [mouse rightMouseUp:YES position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseMove:
+            [mouse moveMouseTo:mousePositon];
             mousePositon = position;
-            wheelScrolling = NO;
-            if (!mouseMoveTimer) {
-                mouseMoveTimer = [NSTimer timerWithTimeInterval:1.0/30 target:self selector:@selector(mouseMove:) userInfo:nil repeats:NO];
-                [[NSRunLoop mainRunLoop] addTimer:mouseMoveTimer forMode:NSRunLoopCommonModes];
-            }
             break;
             
         case AgoraRemoteOperationTypeMouseWheel:
         {
-            [self stopMouseTimer];
-            if (!wheelScrolling) {
-                [mouse moveMouseTo:mousePositon];
-                wheelScrolling = YES;
-            }
-            
             NSDictionary *point = operation.extraInfo[@"scrolDelta"];
             int x = [point[@"x"] intValue];
             int y = [point[@"y"] intValue];
@@ -401,18 +383,6 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
             
         default:
             break;
-    }
-}
-
-- (void)mouseMove:(NSTimer *)timer {
-    [mouse moveMouseTo:mousePositon];
-    mouseMoveTimer = nil;
-}
-
-- (void)stopMouseTimer {
-    if (mouseMoveTimer) {
-        [mouseMoveTimer invalidate];
-        mouseMoveTimer = nil;
     }
 }
 

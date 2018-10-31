@@ -294,20 +294,8 @@
                     <view key="view" id="A0A-Y7-idp" customClass="AgoraBackgroundView">
                         <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <subviews>
-                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="W7P-T7-abv">
-                                <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
-                            </customView>
-                        </subviews>
-                        <constraints>
-                            <constraint firstAttribute="bottom" secondItem="W7P-T7-abv" secondAttribute="bottom" id="8jL-xi-4rk"/>
-                            <constraint firstItem="W7P-T7-abv" firstAttribute="top" secondItem="A0A-Y7-idp" secondAttribute="top" id="Lm8-uF-xA0"/>
-                            <constraint firstItem="W7P-T7-abv" firstAttribute="leading" secondItem="A0A-Y7-idp" secondAttribute="leading" id="UcF-zx-f0a"/>
-                            <constraint firstAttribute="trailing" secondItem="W7P-T7-abv" secondAttribute="trailing" id="quW-6P-LRz"/>
-                        </constraints>
                     </view>
                     <connections>
-                        <outlet property="videoView" destination="W7P-T7-abv" id="N8M-GF-rud"/>
                         <segue destination="XfG-lQ-9wD" kind="custom" identifier="backToMain" customClass="ReplacementSegue" id="SbX-bD-Bc5"/>
                     </connections>
                 </viewController>

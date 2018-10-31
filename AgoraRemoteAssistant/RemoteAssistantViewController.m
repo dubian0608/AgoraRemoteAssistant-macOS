@@ -23,7 +23,7 @@
 
 - (void)viewDidAppear {
     [super viewDidAppear];
-    if ([[AgoraRemoteAssistantCenter sharedInstance] startRemoteAssistant:self.videoView]) {
+    if ([[AgoraRemoteAssistantCenter sharedInstance] startRemoteAssistant:self.view]) {
         [self.view.window toggleFullScreen:nil];
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(close) name:kNotificationRemoteAssistantStoped object:nil];
