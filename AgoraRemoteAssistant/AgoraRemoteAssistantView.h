@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseRightButtonDown:(CGPoint)position isDoubleClick:(BOOL)isDoubleClick;
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseRightButtonUp:(CGPoint)position isDoubleClick:(BOOL)isDoubleClick;
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseMove:(CGPoint)position;
-- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseScrollHorizontal:(CGFloat)scrolDeltaX mouseScrollVertical:(CGFloat)scrolDeltaY;
+- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseScrollHorizontal:(NSInteger)scrolDeltaX mouseScrollVertical:(NSInteger)scrolDeltaY;
 
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyPress:(CGKeyCode)keyCode;
 - (void)remoteAssistantView:(AgoraRemoteAssistantView *)view keyboardKeyDown:(CGKeyCode)keyCode;

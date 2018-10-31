@@ -541,8 +541,8 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     [self sendControlCommand:AgoraRemoteOperationTypeMouseMove info:info];
 }
 
-- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseScrollHorizontal:(CGFloat)scrolDeltaX mouseScrollVertical:(CGFloat)scrolDeltaY {
-    if (scrolDeltaX < 1 && scrolDeltaY < 1) {
+- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseScrollHorizontal:(NSInteger)scrolDeltaX mouseScrollVertical:(NSInteger)scrolDeltaY {
+    if (scrolDeltaX == 0 && scrolDeltaY == 0) {
         return;
     }
     
