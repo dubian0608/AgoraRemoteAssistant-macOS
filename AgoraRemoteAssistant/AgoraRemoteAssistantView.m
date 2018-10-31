@@ -141,7 +141,8 @@
 
 - (void)scrollWheel:(NSEvent *)event {
     NSLog(@"scrollWheel: %@", event);
-    [self.delegate remoteAssistantView:self mouseScrollHorizontal:event.scrollingDeltaX mouseScrollVertical:event.scrollingDeltaY];
+    NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
+    [self.delegate remoteAssistantView:self mouseScroll:location deltaX:event.scrollingDeltaX deltaY:event.scrollingDeltaY];
 }
 
 - (void)mouseEntered:(NSEvent *)event {

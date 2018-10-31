@@ -26,7 +26,9 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     AgoraAPI *agoraSig;
     AgoraKeyboardControl *keyboard;
     AgoraMouseControl *mouse;
+    NSTimer *mouseMoveTimer;
     CGPoint mousePositon;
+    BOOL wheelScrolling;
     
     NSView *parentView;
     AgoraRemoteAssistantView *videoView;
@@ -125,13 +127,12 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
         [agoraRtc muteRemoteVideoStream:_remoteUid mute:NO];
         [self sendControlCommand:AgoraRemoteOperationTypeStartAssistant info:nil];
     }
-    else {
-        mousePositon = CGPointZero;
+//    else {
 //        [agoraRtc startScreenCapture:0 withCaptureFreq:15 bitRate:0 andRect:CGRectZero];
 //        [agoraRtc enableLocalVideo:YES];
 //        [agoraRtc setVideoResolution:screenSize andFrameRate:15 bitrate:2000];
 //        //[agoraRtc setVideoResolution:CGSizeMake(1280, 800) andFrameRate:15 bitrate:2000];
-    }
+//    }
     
     return YES;
 }
@@ -156,9 +157,12 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
         videoView = nil;
         parentView = nil;
     }
-//    else {
+    else {
+        [self stopMouseTimer];
+        mousePositon = CGPointZero;
+        wheelScrolling = NO;
 //        [agoraRtc enableLocalVideo:NO];
-//    }
+    }
     
     _remoteUid = 0;
     
@@ -304,38 +308,54 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     
     switch (operation.type) {
         case AgoraRemoteOperationTypeMouseLeftButtonDown:
+            [self stopMouseTimer];
             [mouse leftMouseDown:NO position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseLeftButtonUp:
+            [self stopMouseTimer];
             [mouse leftMouseUp:NO position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseLeftButtonDoubleClick:
+            [self stopMouseTimer];
             [mouse leftMouseDown:YES position:position];
             [mouse leftMouseUp:YES position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonDown:
+            [self stopMouseTimer];
             [mouse rightMouseDown:NO position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonUp:
+            [self stopMouseTimer];
             [mouse rightMouseUp:NO position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseRightButtonDoubleClick:
+            [self stopMouseTimer];
             [mouse rightMouseDown:YES position:position];
             [mouse rightMouseUp:YES position:position];
             break;
             
         case AgoraRemoteOperationTypeMouseMove:
-            [mouse moveMouseTo:position];
             mousePositon = position;
+            wheelScrolling = NO;
+            if (!mouseMoveTimer) {
+                mouseMoveTimer = [NSTimer timerWithTimeInterval:1.0/30 target:self selector:@selector(mouseMove:) userInfo:nil repeats:NO];
+                [[NSRunLoop mainRunLoop] addTimer:mouseMoveTimer forMode:NSRunLoopCommonModes];
+            }
             break;
             
         case AgoraRemoteOperationTypeMouseWheel:
         {
+            [self stopMouseTimer];
+            if (!wheelScrolling) {
+                [mouse moveMouseTo:mousePositon];
+                wheelScrolling = YES;
+            }
+            
             NSDictionary *point = operation.extraInfo[@"scrolDelta"];
             int x = [point[@"x"] intValue];
             int y = [point[@"y"] intValue];
@@ -381,6 +401,18 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
             
         default:
             break;
+    }
+}
+
+- (void)mouseMove:(NSTimer *)timer {
+    [mouse moveMouseTo:mousePositon];
+    mouseMoveTimer = nil;
+}
+
+- (void)stopMouseTimer {
+    if (mouseMoveTimer) {
+        [mouseMoveTimer invalidate];
+        mouseMoveTimer = nil;
     }
 }
 
@@ -541,13 +573,19 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     [self sendControlCommand:AgoraRemoteOperationTypeMouseMove info:info];
 }
 
-- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseScrollHorizontal:(NSInteger)scrolDeltaX mouseScrollVertical:(NSInteger)scrolDeltaY {
-    if (scrolDeltaX == 0 && scrolDeltaY == 0) {
+- (void)remoteAssistantView:(AgoraRemoteAssistantView *)view mouseScroll:(CGPoint)position deltaX:(NSInteger)deltaX deltaY:(NSInteger)deltaY {
+    if (deltaX == 0 && deltaY == 0) {
         return;
     }
     
-    NSDictionary *info = @{@"scrolDelta": @{@"x": @(scrolDeltaX), @"y": @(scrolDeltaY)}};
     [self sendCacheMouseOperations];
+    
+    NSInteger x = position.x / view.bounds.size.width * remoteVideoSize.width;
+    NSInteger y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
+    NSDictionary *moveInfo = @{@"point": @{@"x": @(x), @"y": @(y)}};
+    [self sendControlCommand:AgoraRemoteOperationTypeMouseMove info:moveInfo];
+    
+    NSDictionary *info = @{@"scrolDelta": @{@"x": @(deltaX), @"y": @(deltaY)}};
     [self sendControlCommand:AgoraRemoteOperationTypeMouseWheel info:info];
 }
 
