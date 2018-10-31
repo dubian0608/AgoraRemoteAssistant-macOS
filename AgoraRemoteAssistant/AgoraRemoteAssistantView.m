@@ -142,7 +142,16 @@
 - (void)scrollWheel:(NSEvent *)event {
     NSLog(@"scrollWheel: %@", event);
     NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
-    [self.delegate remoteAssistantView:self mouseScroll:location deltaX:event.scrollingDeltaX deltaY:event.scrollingDeltaY];
+    if (event.hasPreciseScrollingDeltas) {
+        if (event.phase == NSEventPhaseBegan) {
+            [self.delegate remoteAssistantView:self mouseMove:location];
+        }
+        [self.delegate remoteAssistantView:self mouseScroll:location deltaX:event.scrollingDeltaX deltaY:event.scrollingDeltaY];
+    }
+    else {
+        [self.delegate remoteAssistantView:self mouseMove:location];
+        [self.delegate remoteAssistantView:self mouseScroll:location deltaX:event.scrollingDeltaX * 10 deltaY:event.scrollingDeltaY * 10];
+    }
 }
 
 - (void)mouseEntered:(NSEvent *)event {

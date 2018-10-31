@@ -578,14 +578,8 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
         return;
     }
     
-    [self sendCacheMouseOperations];
-    
-    NSInteger x = position.x / view.bounds.size.width * remoteVideoSize.width;
-    NSInteger y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
-    NSDictionary *moveInfo = @{@"point": @{@"x": @(x), @"y": @(y)}};
-    [self sendControlCommand:AgoraRemoteOperationTypeMouseMove info:moveInfo];
-    
     NSDictionary *info = @{@"scrolDelta": @{@"x": @(deltaX), @"y": @(deltaY)}};
+    [self sendCacheMouseOperations];
     [self sendControlCommand:AgoraRemoteOperationTypeMouseWheel info:info];
 }
 
