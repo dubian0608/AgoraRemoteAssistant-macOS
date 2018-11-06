@@ -488,8 +488,8 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     }
     else {
         [self sendCacheMouseOperations];
+        [self sendControlCommand:AgoraRemoteOperationTypeMouseMove info:info];
     }
-    [self cacheMouseOperation:AgoraRemoteOperationTypeMouseMove info:info];
     [self cacheMouseOperation:AgoraRemoteOperationTypeMouseLeftButtonDown info:info];
 }
 
@@ -498,7 +498,7 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     NSInteger y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     if (isDoubleClick) {
-        [self sendCacheMouseOperations];
+        [self clearMouseClickCache];
         [self sendControlCommand:AgoraRemoteOperationTypeMouseLeftButtonDoubleClick info:info];
     }
     else {
@@ -516,8 +516,8 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     }
     else {
         [self sendCacheMouseOperations];
+        [self sendControlCommand:AgoraRemoteOperationTypeMouseMove info:info];
     }
-    [self cacheMouseOperation:AgoraRemoteOperationTypeMouseMove info:info];
     [self cacheMouseOperation:AgoraRemoteOperationTypeMouseRightButtonDown info:info];
 }
 
@@ -526,7 +526,7 @@ static NSString * const kAppID = @"012ac3f2bbad46dfa702e8b2ef628954";
     NSInteger y = (1 - position.y / view.bounds.size.height) * remoteVideoSize.height;
     NSDictionary *info = @{@"point": @{@"x": @(x), @"y": @(y)}};
     if (isDoubleClick) {
-        [self sendCacheMouseOperations];
+        [self clearMouseClickCache];
         [self sendControlCommand:AgoraRemoteOperationTypeMouseRightButtonDoubleClick info:info];
     }
     else {
