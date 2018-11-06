@@ -97,11 +97,11 @@
     NSLog(@"resignFirstResponder: %@", event);
     NSEventModifierFlags flags = event.modifierFlags;
     if (!capsLockDown && (flags & NSEventModifierFlagCapsLock) == NSEventModifierFlagCapsLock) {
-         [self.delegate remoteAssistantView:self keyboardKeyDown:kVK_CapsLock];
+         [self.delegate remoteAssistantView:self keyboardKeyPress:kVK_CapsLock];
         capsLockDown = YES;
     }
     else if (capsLockDown && (flags & NSEventModifierFlagCapsLock) != NSEventModifierFlagCapsLock) {
-        [self.delegate remoteAssistantView:self keyboardKeyUp:kVK_CapsLock];
+        [self.delegate remoteAssistantView:self keyboardKeyPress:kVK_CapsLock];
         capsLockDown = NO;
     }
     else if (!shiftDown && (flags & NSEventModifierFlagShift) == NSEventModifierFlagShift) {
