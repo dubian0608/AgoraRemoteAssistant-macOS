@@ -36,8 +36,9 @@ static const NSString *KeyOfExtraInfo = @"param";
 }
 
 - (NSDictionary *)convertToDic {
+    NSInteger timeStamp = self.timeStamp;
     NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                @(self.type), KeyOfType, @(self.timeStamp), KeyOfTimeStamp, nil];
+                                @(self.type), KeyOfType, @(timeStamp), KeyOfTimeStamp, nil];
     if (self.extraInfo) {
         dic[KeyOfExtraInfo] = self.extraInfo;
     }
