@@ -7,8 +7,17 @@
 //
 
 #import "AgoraRemoteAssistantView.h"
+#import <Carbon/Carbon.h>
 
 @interface AgoraRemoteAssistantView ()
+{
+    bool capsLockDown;
+    bool shiftDown;
+    bool fnDown;
+    bool controlDown;
+    bool optionDown;
+    bool commandDown;
+}
 @property (assign) BOOL mouseInside;
 @end
 
@@ -86,6 +95,55 @@
 
 - (void)flagsChanged:(NSEvent *)event {
     NSLog(@"resignFirstResponder: %@", event);
+    NSEventModifierFlags flags = event.modifierFlags;
+    if (!capsLockDown && (flags & NSEventModifierFlagCapsLock) == NSEventModifierFlagCapsLock) {
+         [self.delegate remoteAssistantView:self keyboardKeyDown:kVK_CapsLock];
+        capsLockDown = YES;
+    }
+    else if (capsLockDown && (flags & NSEventModifierFlagCapsLock) != NSEventModifierFlagCapsLock) {
+        [self.delegate remoteAssistantView:self keyboardKeyUp:kVK_CapsLock];
+        capsLockDown = NO;
+    }
+    else if (!shiftDown && (flags & NSEventModifierFlagShift) == NSEventModifierFlagShift) {
+        [self.delegate remoteAssistantView:self keyboardKeyDown:kVK_Shift];
+        shiftDown = YES;
+    }
+    else if (shiftDown && (flags & NSEventModifierFlagShift) != NSEventModifierFlagShift) {
+        [self.delegate remoteAssistantView:self keyboardKeyUp:kVK_Shift];
+        shiftDown = NO;
+    }
+    else if (!controlDown && (flags & NSEventModifierFlagControl) == NSEventModifierFlagControl) {
+        [self.delegate remoteAssistantView:self keyboardKeyDown:kVK_Control];
+        controlDown = YES;
+    }
+    else if (controlDown && (flags & NSEventModifierFlagControl) != NSEventModifierFlagControl) {
+        [self.delegate remoteAssistantView:self keyboardKeyUp:kVK_Shift];
+        controlDown = NO;
+    }
+    else if (!optionDown && (flags & NSEventModifierFlagOption) == NSEventModifierFlagOption) {
+        [self.delegate remoteAssistantView:self keyboardKeyDown:kVK_Option];
+        optionDown = YES;
+    }
+    else if (optionDown && (flags & NSEventModifierFlagOption) != NSEventModifierFlagOption) {
+        [self.delegate remoteAssistantView:self keyboardKeyUp:kVK_Option];
+        optionDown = NO;
+    }
+    else if (!commandDown && (flags & NSEventModifierFlagCommand) == NSEventModifierFlagCommand) {
+        [self.delegate remoteAssistantView:self keyboardKeyDown:kVK_Command];
+        commandDown = YES;
+    }
+    else if (commandDown && (flags & NSEventModifierFlagCommand) != NSEventModifierFlagCommand) {
+        [self.delegate remoteAssistantView:self keyboardKeyUp:kVK_Command];
+        commandDown = NO;
+    }
+    else if (!fnDown && (flags & NSEventModifierFlagFunction) == NSEventModifierFlagFunction) {
+        [self.delegate remoteAssistantView:self keyboardKeyDown:kVK_Function];
+        fnDown = YES;
+    }
+    else if (fnDown && (flags & NSEventModifierFlagFunction) != NSEventModifierFlagFunction) {
+        [self.delegate remoteAssistantView:self keyboardKeyUp:kVK_Function];
+        fnDown = NO;
+    }
 }
 
 - (void)keyDown:(NSEvent *)event {
